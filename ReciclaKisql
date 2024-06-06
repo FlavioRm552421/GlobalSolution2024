@@ -3654,3 +3654,137 @@ EXCEPTION
         RAISE;
 END;
 /
+
+
+--CRIANDO 4 BLOCOS ANONIMOS
+
+--PRIMEIRO BLOCO ANÔNIMO
+
+DECLARE
+    CURSOR cur_usuarios IS
+        SELECT cod_usuario, nome_usuario, cod_endereco
+        FROM gs_usuario;
+        
+    rec_usuarios cur_usuarios%ROWTYPE;
+BEGIN
+    OPEN cur_usuarios;
+    LOOP
+        FETCH cur_usuarios INTO rec_usuarios;
+        EXIT WHEN cur_usuarios%NOTFOUND;
+        
+        -- Tomada de decisão: verificar se o código do endereço é válido
+        IF rec_usuarios.cod_endereco IS NOT NULL THEN
+            DBMS_OUTPUT.PUT_LINE('Cod_Usuario: ' || rec_usuarios.cod_usuario || ', Nome_Usuario: ' || rec_usuarios.nome_usuario || ', Cod_Endereco: ' || rec_usuarios.cod_endereco);
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Cod_Usuario: ' || rec_usuarios.cod_usuario || ', Nome_Usuario: ' || rec_usuarios.nome_usuario || ' (Endereço não disponível)');
+        END IF;
+    END LOOP;
+    CLOSE cur_usuarios;
+END;
+/
+
+
+--SEGUNDO BLOCO ANONIMO
+
+DECLARE
+    CURSOR cur_cooperativas IS
+        SELECT cod_cooperativa, nome_cooperativa, cod_endereco
+        FROM gs_cooperativa;
+        
+    rec_cooperativas cur_cooperativas%ROWTYPE;
+BEGIN
+    OPEN cur_cooperativas;
+    LOOP
+        FETCH cur_cooperativas INTO rec_cooperativas;
+        EXIT WHEN cur_cooperativas%NOTFOUND;
+        
+        -- Tomada de decisão: verificar se o código do endereço é válido
+        IF rec_cooperativas.cod_endereco IS NOT NULL THEN
+            DBMS_OUTPUT.PUT_LINE('Cod_Cooperativa: ' || rec_cooperativas.cod_cooperativa || ', Nome_Cooperativa: ' || rec_cooperativas.nome_cooperativa || ', Cod_Endereco: ' || rec_cooperativas.cod_endereco);
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Cod_Cooperativa: ' || rec_cooperativas.cod_cooperativa || ', Nome_Cooperativa: ' || rec_cooperativas.nome_cooperativa || ' (Endereço não disponível)');
+        END IF;
+    END LOOP;
+    CLOSE cur_cooperativas;
+END;
+/
+
+--TERCEIRO BLOCO ANÔNIMO
+
+DECLARE
+    CURSOR cur_cooperados IS
+        SELECT cod_cooperado, nome_cooperado, cod_endereco, cod_cooperativa
+        FROM gs_cooperados;
+        
+    rec_cooperados cur_cooperados%ROWTYPE;
+BEGIN
+    OPEN cur_cooperados;
+    LOOP
+        FETCH cur_cooperados INTO rec_cooperados;
+        EXIT WHEN cur_cooperados%NOTFOUND;
+        
+        -- Tomada de decisão: verificar se o código do endereço é válido
+        IF rec_cooperados.cod_endereco IS NOT NULL THEN
+            DBMS_OUTPUT.PUT_LINE('Cod_Cooperado: ' || rec_cooperados.cod_cooperado || ', Nome_Cooperado: ' || rec_cooperados.nome_cooperado || ', Cod_Endereco: ' || rec_cooperados.cod_endereco || ', Cod_Cooperativa: ' || rec_cooperados.cod_cooperativa);
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Cod_Cooperado: ' || rec_cooperados.cod_cooperado || ', Nome_Cooperado: ' || rec_cooperados.nome_cooperado || ' (Endereço não disponível), Cod_Cooperativa: ' || rec_cooperados.cod_cooperativa);
+        END IF;
+    END LOOP;
+    CLOSE cur_cooperados;
+END;
+/
+
+--QUARTO BLOCO ANONIMO (COM RELATORIO)
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+    CURSOR cur_pedidos IS
+        SELECT p.cod_pedido, p.data_pedido, p.qtde_itens, p.cod_material, p.cod_usuario, p.cod_status, p.cod_cooperado, m.tipo_material, s.tipo_status
+        FROM gs_pedido p
+        JOIN gs_materiais m ON p.cod_material = m.cod_material
+        JOIN gs_status s ON p.cod_status = s.cod_status;
+        
+    rec_pedidos cur_pedidos%ROWTYPE;
+    v_total_geral NUMBER := 0;
+    v_sub_total NUMBER := 0;
+    v_last_tipo_material VARCHAR2(30) := NULL;
+    v_last_tipo_status VARCHAR2(30) := NULL;
+    
+    PROCEDURE print_sub_total IS
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE('Sub-Total   ' || v_sub_total);
+        v_total_geral := v_total_geral + v_sub_total;
+        v_sub_total := 0;
+    END;
+    
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Campo1     Campo2     Valor');
+
+    OPEN cur_pedidos;
+    LOOP
+        FETCH cur_pedidos INTO rec_pedidos;
+        EXIT WHEN cur_pedidos%NOTFOUND;
+        
+        -- Agrupamento por tipo_material e tipo_status
+        IF v_last_tipo_material IS NULL THEN
+            v_last_tipo_material := rec_pedidos.tipo_material;
+            v_last_tipo_status := rec_pedidos.tipo_status;
+        ELSIF v_last_tipo_material != rec_pedidos.tipo_material OR v_last_tipo_status != rec_pedidos.tipo_status THEN
+            print_sub_total;
+            v_last_tipo_material := rec_pedidos.tipo_material;
+            v_last_tipo_status := rec_pedidos.tipo_status;
+        END IF;
+
+        DBMS_OUTPUT.PUT_LINE(rec_pedidos.tipo_material || '           ' || rec_pedidos.tipo_status || '           ' || rec_pedidos.qtde_itens);
+        v_sub_total := v_sub_total + rec_pedidos.qtde_itens;
+    END LOOP;
+    
+    -- Output last subtotal
+    print_sub_total;
+    
+    DBMS_OUTPUT.PUT_LINE('Total Geral ' || v_total_geral);
+    CLOSE cur_pedidos;
+END;
+/
+
