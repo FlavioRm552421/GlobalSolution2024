@@ -10,7 +10,6 @@
 --   site:      Oracle Database 11g
 --   tipo:      Oracle Database 11g
 
-SELECT *FROM GS_PAIS
 
 DROP TABLE gs_bairro CASCADE CONSTRAINTS;
 
@@ -3328,3 +3327,330 @@ COMMIT;
 
 --CARGA DE DADOS COM PROCEDURE
 
+--TABELA SEQUENCIA LOGS DE ERROS
+
+CREATE TABLE gs_error_log (
+    log_id         INTEGER PRIMARY KEY,
+    procedure_name VARCHAR2(100 BYTE),
+    user_name      VARCHAR2(30 BYTE),
+    error_date     DATE,
+    error_code     INTEGER,
+    error_message  VARCHAR2(4000 BYTE)
+);
+
+CREATE SEQUENCE gs_error_log_seq
+    START WITH 1
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
+
+--TABELA GS_PAIS
+
+CREATE OR REPLACE PROCEDURE sp_insert_gs_pais (
+    p_cod_pais  IN INTEGER,
+    p_nome_pais IN VARCHAR2
+)
+IS
+    v_user_name VARCHAR2(30);
+    v_error_code NUMBER;
+    v_error_message VARCHAR2(4000);
+BEGIN
+    INSERT INTO gs_pais (cod_pais, nome_pais) 
+    VALUES (p_cod_pais, p_nome_pais);
+EXCEPTION
+    WHEN OTHERS THEN
+        v_user_name := SYS_CONTEXT('USERENV', 'CURRENT_USER');
+        v_error_code := SQLCODE;
+        v_error_message := SQLERRM;
+        INSERT INTO gs_error_log (log_id, procedure_name, user_name, error_date, error_code, error_message)
+        VALUES (gs_error_log_seq.NEXTVAL, 'sp_insert_gs_pais', v_user_name, SYSDATE, v_error_code, v_error_message);
+        RAISE;
+END;
+/
+
+--TABELA GS_ESTADO
+
+CREATE OR REPLACE PROCEDURE sp_insert_gs_estado (
+    p_cod_estado IN INTEGER,
+    p_nome_estado IN VARCHAR2,
+    p_cod_pais IN INTEGER
+)
+IS
+    v_user_name VARCHAR2(30);
+    v_error_code NUMBER;
+    v_error_message VARCHAR2(4000);
+BEGIN
+    INSERT INTO gs_estado (cod_estado, nome_estado, cod_pais) 
+    VALUES (p_cod_estado, p_nome_estado, p_cod_pais);
+EXCEPTION
+    WHEN OTHERS THEN
+        v_user_name := SYS_CONTEXT('USERENV', 'CURRENT_USER');
+        v_error_code := SQLCODE;
+        v_error_message := SQLERRM;
+        INSERT INTO gs_error_log (log_id, procedure_name, user_name, error_date, error_code, error_message)
+        VALUES (gs_error_log_seq.NEXTVAL, 'sp_insert_gs_estado', v_user_name, SYSDATE, v_error_code, v_error_message);
+        RAISE;
+END;
+/
+
+--TABELA GS_REGIAO
+
+CREATE OR REPLACE PROCEDURE sp_insert_gs_regiao (
+    p_cod_regiao IN INTEGER,
+    p_nome_regiao IN VARCHAR2
+)
+IS
+    v_user_name VARCHAR2(30);
+    v_error_code NUMBER;
+    v_error_message VARCHAR2(4000);
+BEGIN
+    INSERT INTO gs_regiao (cod_regiao, nome_regiao) 
+    VALUES (p_cod_regiao, p_nome_regiao);
+EXCEPTION
+    WHEN OTHERS THEN
+        v_user_name := SYS_CONTEXT('USERENV', 'CURRENT_USER');
+        v_error_code := SQLCODE;
+        v_error_message := SQLERRM;
+        INSERT INTO gs_error_log (log_id, procedure_name, user_name, error_date, error_code, error_message)
+        VALUES (gs_error_log_seq.NEXTVAL, 'sp_insert_gs_regiao', v_user_name, SYSDATE, v_error_code, v_error_message);
+        RAISE;
+END;
+/
+
+--TABELA GS_CIDADE
+
+CREATE OR REPLACE PROCEDURE sp_insert_gs_cidade (
+    p_cod_cidade IN INTEGER,
+    p_nome_cidade IN VARCHAR2,
+    p_cod_estado IN INTEGER
+)
+IS
+    v_user_name VARCHAR2(30);
+    v_error_code NUMBER;
+    v_error_message VARCHAR2(4000);
+BEGIN
+    INSERT INTO gs_cidade (cod_cidade, nome_cidade, cod_estado) 
+    VALUES (p_cod_cidade, p_nome_cidade, p_cod_estado);
+EXCEPTION
+    WHEN OTHERS THEN
+        v_user_name := SYS_CONTEXT('USERENV', 'CURRENT_USER');
+        v_error_code := SQLCODE;
+        v_error_message := SQLERRM;
+        INSERT INTO gs_error_log (log_id, procedure_name, user_name, error_date, error_code, error_message)
+        VALUES (gs_error_log_seq.NEXTVAL, 'sp_insert_gs_cidade', v_user_name, SYSDATE, v_error_code, v_error_message);
+        RAISE;
+END;
+/
+
+--TABELA GS_BAIRRO
+
+CREATE OR REPLACE PROCEDURE sp_insert_gs_bairro (
+    p_cod_bairro IN INTEGER,
+    p_nome_bairro IN VARCHAR2,
+    p_cod_cidade IN INTEGER,
+    p_cod_regiao IN INTEGER
+)
+IS
+    v_user_name VARCHAR2(30);
+    v_error_code NUMBER;
+    v_error_message VARCHAR2(4000);
+BEGIN
+    INSERT INTO gs_bairro (cod_bairro, nome_bairro, cod_cidade, cod_regiao) 
+    VALUES (p_cod_bairro, p_nome_bairro, p_cod_cidade, p_cod_regiao);
+EXCEPTION
+    WHEN OTHERS THEN
+        v_user_name := SYS_CONTEXT('USERENV', 'CURRENT_USER');
+        v_error_code := SQLCODE;
+        v_error_message := SQLERRM;
+        INSERT INTO gs_error_log (log_id, procedure_name, user_name, error_date, error_code, error_message)
+        VALUES (gs_error_log_seq.NEXTVAL, 'sp_insert_gs_bairro', v_user_name, SYSDATE, v_error_code, v_error_message);
+        RAISE;
+END;
+/
+
+
+--TABELA GS_ENDERECO
+
+CREATE OR REPLACE PROCEDURE sp_insert_gs_endereco (
+    p_cod_endereco IN INTEGER,
+    p_logradouro IN VARCHAR2,
+    p_nr_logradouro IN INTEGER,
+    p_complemento IN VARCHAR2,
+    p_referencia IN VARCHAR2,
+    p_nr_cep IN VARCHAR2,
+    p_cod_bairro IN INTEGER
+)
+IS
+    v_user_name VARCHAR2(30);
+    v_error_code NUMBER;
+    v_error_message VARCHAR2(4000);
+BEGIN
+    INSERT INTO gs_endereco (cod_endereco, logradouro, nr_logradouro, complemento, referencia, nr_cep, cod_bairro) 
+    VALUES (p_cod_endereco, p_logradouro, p_nr_logradouro, p_complemento, p_referencia, p_nr_cep, p_cod_bairro);
+EXCEPTION
+    WHEN OTHERS THEN
+        v_user_name := SYS_CONTEXT('USERENV', 'CURRENT_USER');
+        v_error_code := SQLCODE;
+        v_error_message := SQLERRM;
+        INSERT INTO gs_error_log (log_id, procedure_name, user_name, error_date, error_code, error_message)
+        VALUES (gs_error_log_seq.NEXTVAL, 'sp_insert_gs_endereco', v_user_name, SYSDATE, v_error_code, v_error_message);
+        RAISE;
+END;
+/
+
+--TABELA GS_USUARIO
+
+CREATE OR REPLACE PROCEDURE sp_insert_gs_usuario (
+    p_cod_usuario IN INTEGER,
+    p_nome_usuario IN VARCHAR2,
+    p_cod_endereco IN INTEGER
+)
+IS
+    v_user_name VARCHAR2(30);
+    v_error_code NUMBER;
+    v_error_message VARCHAR2(4000);
+BEGIN
+    INSERT INTO gs_usuario (cod_usuario, nome_usuario, cod_endereco) 
+    VALUES (p_cod_usuario, p_nome_usuario, p_cod_endereco);
+EXCEPTION
+    WHEN OTHERS THEN
+        v_user_name := SYS_CONTEXT('USERENV', 'CURRENT_USER');
+        v_error_code := SQLCODE;
+        v_error_message := SQLERRM;
+        INSERT INTO gs_error_log (log_id, procedure_name, user_name, error_date, error_code, error_message)
+        VALUES (gs_error_log_seq.NEXTVAL, 'sp_insert_gs_usuario', v_user_name, SYSDATE, v_error_code, v_error_message);
+        RAISE;
+END;
+/
+
+
+--TABELA GS_COOPERATIVA
+
+CREATE OR REPLACE PROCEDURE sp_insert_gs_cooperativa (
+    p_cod_cooperativa IN INTEGER,
+    p_nome_cooperativa IN VARCHAR2,
+    p_cod_endereco IN INTEGER
+)
+IS
+    v_user_name VARCHAR2(30);
+    v_error_code NUMBER;
+    v_error_message VARCHAR2(4000);
+BEGIN
+    INSERT INTO gs_cooperativa (cod_cooperativa, nome_cooperativa, cod_endereco) 
+    VALUES (p_cod_cooperativa, p_nome_cooperativa, p_cod_endereco);
+EXCEPTION
+    WHEN OTHERS THEN
+        v_user_name := SYS_CONTEXT('USERENV', 'CURRENT_USER');
+        v_error_code := SQLCODE;
+        v_error_message := SQLERRM;
+        INSERT INTO gs_error_log (log_id, procedure_name, user_name, error_date, error_code, error_message)
+        VALUES (gs_error_log_seq.NEXTVAL, 'sp_insert_gs_cooperativa', v_user_name, SYSDATE, v_error_code, v_error_message);
+        RAISE;
+END;
+/
+
+--TABELA GS_COOPERADOS
+
+CREATE OR REPLACE PROCEDURE sp_insert_gs_cooperados (
+    p_cod_cooperado IN INTEGER,
+    p_nome_cooperado IN VARCHAR2,
+    p_cod_endereco IN INTEGER,
+    p_cod_cooperativa IN INTEGER
+)
+IS
+    v_user_name VARCHAR2(30);
+    v_error_code NUMBER;
+    v_error_message VARCHAR2(4000);
+BEGIN
+    INSERT INTO gs_cooperados (cod_cooperado, nome_cooperado, cod_endereco, cod_cooperativa) 
+    VALUES (p_cod_cooperado, p_nome_cooperado, p_cod_endereco, p_cod_cooperativa);
+EXCEPTION
+    WHEN OTHERS THEN
+        v_user_name := SYS_CONTEXT('USERENV', 'CURRENT_USER');
+        v_error_code := SQLCODE;
+        v_error_message := SQLERRM;
+        INSERT INTO gs_error_log (log_id, procedure_name, user_name, error_date, error_code, error_message)
+        VALUES (gs_error_log_seq.NEXTVAL, 'sp_insert_gs_cooperados', v_user_name, SYSDATE, v_error_code, v_error_message);
+        RAISE;
+END;
+/
+
+--TABELA GS_STATUS
+
+CREATE OR REPLACE PROCEDURE sp_insert_gs_status (
+    p_cod_status IN INTEGER,
+    p_tipo_status IN VARCHAR2
+)
+IS
+    v_user_name VARCHAR2(30);
+    v_error_code NUMBER;
+    v_error_message VARCHAR2(4000);
+BEGIN
+    INSERT INTO gs_status (cod_status, tipo_status) 
+    VALUES (p_cod_status, p_tipo_status);
+EXCEPTION
+    WHEN OTHERS THEN
+        v_user_name := SYS_CONTEXT('USERENV', 'CURRENT_USER');
+        v_error_code := SQLCODE;
+        v_error_message := SQLERRM;
+        INSERT INTO gs_error_log (log_id, procedure_name, user_name, error_date, error_code, error_message)
+        VALUES (gs_error_log_seq.NEXTVAL, 'sp_insert_gs_status', v_user_name, SYSDATE, v_error_code, v_error_message);
+        RAISE;
+END;
+/
+
+--TABELA GS_PEDIDO
+
+CREATE OR REPLACE PROCEDURE sp_insert_gs_pedido (
+    p_cod_pedido IN INTEGER,
+    p_data_pedido IN DATE,
+    p_qtde_itens IN INTEGER,
+    p_cod_material IN INTEGER,
+    p_cod_usuario IN INTEGER,
+    p_cod_status IN INTEGER,
+    p_cod_cooperado IN INTEGER
+)
+IS
+    v_user_name VARCHAR2(30);
+    v_error_code NUMBER;
+    v_error_message VARCHAR2(4000);
+BEGIN
+    INSERT INTO gs_pedido (cod_pedido, data_pedido, qtde_itens, cod_material, cod_usuario, cod_status, cod_cooperado) 
+    VALUES (p_cod_pedido, p_data_pedido, p_qtde_itens, p_cod_material, p_cod_usuario, p_cod_status, p_cod_cooperado);
+EXCEPTION
+    WHEN OTHERS THEN
+        v_user_name := SYS_CONTEXT('USERENV', 'CURRENT_USER');
+        v_error_code := SQLCODE;
+        v_error_message := SQLERRM;
+        INSERT INTO gs_error_log (log_id, procedure_name, user_name, error_date, error_code, error_message)
+        VALUES (gs_error_log_seq.NEXTVAL, 'sp_insert_gs_pedido', v_user_name, SYSDATE, v_error_code, v_error_message);
+        RAISE;
+END;
+/
+
+--TABELA GS_MATERIAIS
+
+CREATE OR REPLACE PROCEDURE sp_insert_gs_materiais (
+    p_cod_material IN INTEGER,
+    p_nome_material IN VARCHAR2,
+    p_tipo_material IN VARCHAR2,
+    p_cod_pedido IN INTEGER
+)
+IS
+    v_user_name VARCHAR2(30);
+    v_error_code NUMBER;
+    v_error_message VARCHAR2(4000);
+BEGIN
+    INSERT INTO gs_materiais (cod_material, nome_material, tipo_material, cod_pedido) 
+    VALUES (p_cod_material, p_nome_material, p_tipo_material, p_cod_pedido);
+EXCEPTION
+    WHEN OTHERS THEN
+        v_user_name := SYS_CONTEXT('USERENV', 'CURRENT_USER');
+        v_error_code := SQLCODE;
+        v_error_message := SQLERRM;
+        INSERT INTO gs_error_log (log_id, procedure_name, user_name, error_date, error_code, error_message)
+        VALUES (gs_error_log_seq.NEXTVAL, 'sp_insert_gs_materiais', v_user_name, SYSDATE, v_error_code, v_error_message);
+        RAISE;
+END;
+/
